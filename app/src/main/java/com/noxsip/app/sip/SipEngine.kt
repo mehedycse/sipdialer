@@ -65,6 +65,27 @@ class SipEngine(private val context: Context) {
         }
     }
 
+    /**
+     * নেটওয়ার্ক বদলালে (Wi-Fi / মোবাইল ডেটা / VPN চালু-বন্ধ) পুরনো সকেট মরে যায়।
+     * কল না থাকলে নেটওয়ার্ককে একটু "বন্ধ" করে আবার "চালু" ধরে সকেট নতুন করে বাঁধি এবং রি-রেজিস্টার করি।
+     */
+    fun networkChanged() {
+        mainHandler.post {
+            try {
+                if (core.accountList.isEmpty() || core.callsNb > 0) return@post
+                core.setNetworkReachable(false)
+                mainHandler.postDelayed({
+                    try {
+                        core.setNetworkReachable(true)
+                        core.refreshRegisters()
+                    } catch (_: Exception) {
+                    }
+                }, 800)
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     /** নির্বাচিত (সবুজ টিক) অ্যাকাউন্টের অবস্থা; পুরনো UI এটাই দেখে */
     private val _registrationState = MutableStateFlow(SipRegistrationState.UNREGISTERED)
     val registrationState: StateFlow<SipRegistrationState> = _registrationState.asStateFlow()
@@ -198,6 +219,47 @@ class SipEngine(private val context: Context) {
     private var activeCallRecorded = false
     private var activeRecordingPath: String = ""
 
+    /** এই কলে এখন রেকর্ড হচ্ছে কি না (কল স্ক্রিনের Rec বাটন এটা দেখায়) */
+    private val _isRecording = MutableStateFlow(false)
+    val isRecording: StateFlow<Boolean> = _isRecording.asStateFlow()
+
+    /** ব্যবহারকারী এই কলে রেকর্ডিং নিজে বন্ধ করলে true; পরের StreamsRunning ইভেন্টে অটো-চালু হবে না */
+    @Volatile private var recordingUserOff = false
+
+    /** কল চলাকালীন রেকর্ডিং চালু/বন্ধ (সেটিংসে অটো-রেকর্ড বন্ধ থাকলেও এই কলে চালু করা যায়) */
+    fun toggleRecording() {
+        mainHandler.post {
+            try {
+                val call = core.currentCall ?: return@post
+                if (_isRecording.value) {
+                    call.stopRecording()
+                    recordingUserOff = true
+                    _isRecording.value = false
+                } else {
+                    if (activeRecordingPath.isEmpty()) {
+                        val remote = try { call.remoteAddress.asStringUriOnly() } catch (_: Exception) { "call" }
+                        activeRecordingPath = prepareRecordingPath(remote, force = true)
+                    }
+                    if (activeRecordingPath.isNotEmpty()) {
+                        try {
+                            val p = call.params
+                            if (p.recordFile.isNullOrEmpty()) {
+                                p.recordFile = activeRecordingPath
+                                call.params = p
+                            }
+                        } catch (_: Exception) {
+                        }
+                        call.startRecording()
+                        recordingUserOff = false
+                        _isRecording.value = true
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "toggleRecording failed: ${e.message}")
+            }
+        }
+    }
+
     // ---- ইনকামিং কল "কলার কেটে দিয়েছে" শনাক্তকরণ (CANCEL না পাঠানো গেটওয়ের জন্য) ----
     // কিছু PSTN গেটওয়ে (যেমন SemuxGW) কলার কাটলে CANCEL পাঠায় না; শুধু প্রতি ~৩ সেকেন্ডে INVITE
     // পুনঃপ্রেরণা বন্ধ করে দেয়। তাই পুনঃপ্রেরণা থেমে গেলে ধরে নিই কলার কেটে দিয়েছে।
@@ -288,8 +350,8 @@ class SipEngine(private val context: Context) {
         }
     }
 
-    private fun prepareRecordingPath(remote: String): String {
-        if (!TelecomHelper.isAutoRecordEnabled(context)) return ""
+    private fun prepareRecordingPath(remote: String, force: Boolean = false): String {
+        if (!force && !TelecomHelper.isAutoRecordEnabled(context)) return ""
         return try {
             val baseDir = File(context.getExternalFilesDir(null) ?: context.filesDir, "CallRecordings")
             if (!baseDir.exists()) baseDir.mkdirs()
@@ -633,7 +695,7 @@ class SipEngine(private val context: Context) {
                     NativeDialerOverlay.dismissIncomingIfVisible()
                     try {
                         core.isMicEnabled = !_isMuted.value
-                        if (TelecomHelper.isAutoRecordEnabled(context)) {
+                        if (!recordingUserOff && (TelecomHelper.isAutoRecordEnabled(context) || _isRecording.value)) {
                             if (activeRecordingPath.isEmpty()) {
                                 activeRecordingPath = prepareRecordingPath(remoteAddress)
                             }
@@ -647,6 +709,7 @@ class SipEngine(private val context: Context) {
                                 } catch (_: Exception) {
                                 }
                                 call.startRecording()
+                                _isRecording.value = true
                             }
                         }
                     } catch (e: Exception) {
@@ -677,6 +740,8 @@ class SipEngine(private val context: Context) {
                         call.stopRecording()
                     } catch (_: Exception) {
                     }
+                    _isRecording.value = false
+                    recordingUserOff = false
                     if (!activeCallRecorded) {
                         activeCallRecorded = true
                         val durationSec = try {
@@ -731,6 +796,7 @@ class SipEngine(private val context: Context) {
                         }
                     }
                     // কল কেন ব্যর্থ হলো (সার্ভারের কোড, যেমন 403/404/503) জানাতে
+                    @Suppress("SENSELESS_COMPARISON")
                     val failure = try {
                         val ei = call.errorInfo
                         if (state == Call.State.Error || (ei != null && ei.protocolCode >= 300)) {

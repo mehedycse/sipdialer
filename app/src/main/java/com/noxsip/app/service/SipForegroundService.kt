@@ -170,6 +170,10 @@ class SipForegroundService : Service() {
     private var netCallback: ConnectivityManager.NetworkCallback? = null
     private var lastNetwork: Network? = null
     private var networkLost = false
+    private var lastVpn: Boolean? = null
+
+    private fun isVpn(cm: ConnectivityManager, network: Network): Boolean =
+        try { cm.getNetworkCapabilities(network)?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_VPN) == true } catch (_: Exception) { false }
 
     /** Wi-Fi ↔ মোবাইল ডেটা বদলালে বা নেটওয়ার্ক ফিরলে দ্রুত রি-রেজিস্টার */
     private fun registerNetworkWatch() {
@@ -179,8 +183,8 @@ class SipForegroundService : Service() {
                 override fun onAvailable(network: Network) {
                     val changed = lastNetwork != null && lastNetwork != network
                     if (changed || networkLost) {
-                        Log.i(TAG, "Network changed/restored, refreshing registration")
-                        sipEngine.keepAliveTick()
+                        Log.i(TAG, "Network changed/restored (vpn=" + isVpn(cm, network) + "), resetting SIP sockets")
+                        sipEngine.networkChanged()
                     }
                     lastNetwork = network
                     networkLost = false
@@ -188,6 +192,16 @@ class SipForegroundService : Service() {
 
                 override fun onLost(network: Network) {
                     if (lastNetwork == network) networkLost = true
+                }
+
+                override fun onCapabilitiesChanged(network: Network, caps: android.net.NetworkCapabilities) {
+                    // VPN চালু হলে ডিফল্ট নেটওয়ার্কের ক্ষমতা বদলায় (TRANSPORT_VPN যোগ হয়)
+                    val vpn = caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_VPN)
+                    if (lastVpn != null && lastVpn != vpn) {
+                        Log.i(TAG, "VPN state changed (vpn=" + vpn + "), resetting SIP sockets")
+                        sipEngine.networkChanged()
+                    }
+                    lastVpn = vpn
                 }
             }
             cm.registerDefaultNetworkCallback(cb)

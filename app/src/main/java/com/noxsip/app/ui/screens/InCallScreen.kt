@@ -1,6 +1,7 @@
 package com.noxsip.app.ui.screens
 
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.filled.Call
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +47,8 @@ fun InCallScreen(
     onSpeakerToggle: () -> Unit,
     onHoldToggle: () -> Unit,
     onDtmf: (Char) -> Unit,
+    isRecording: Boolean = false,
+    onRecordToggle: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showDialpad by remember { mutableStateOf(false) }
@@ -160,9 +164,7 @@ fun InCallScreen(
                 )
 
                 val recCtx = androidx.compose.ui.platform.LocalContext.current
-                if (callState is SipCallState.Connected &&
-                    com.noxsip.app.telecom.TelecomHelper.isAutoRecordEnabled(recCtx)
-                ) {
+                if (callState is SipCallState.Connected && isRecording) {
                     Spacer(modifier = Modifier.height(10.dp))
                     val pulse = androidx.compose.animation.core.rememberInfiniteTransition(label = "rec")
                     val dotAlpha by pulse.animateFloat(
@@ -257,8 +259,15 @@ fun InCallScreen(
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (callState is SipCallState.Outgoing || callState is SipCallState.Incoming) {
+                    if (callState is SipCallState.Outgoing) {
                         CallingRipples()
+                    }
+                    // ইনকামিং: স্ক্রিনের মাঝখানে ভার্টিক্যাল স্লাইডার (ওপরে Accept, নিচে Reject)
+                    if (callState is SipCallState.Incoming) {
+                        IncomingCallControls(
+                            onAnswer = onAnswer,
+                            onDecline = onDecline
+                        )
                     }
                 }
             }
@@ -278,24 +287,27 @@ fun InCallScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (callState is SipCallState.Connected) {
-                    FilledTonalIconButton(
-                        onClick = { showDialpad = !showDialpad }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(32.dp),
+                        verticalAlignment = Alignment.Top
                     ) {
-                        Icon(
-                            Icons.Filled.Dialpad,
-                            contentDescription = "DTMF Keypad"
-                        )
+                        InCallActionButton(
+                            label = "Keypad",
+                            active = showDialpad,
+                            activeColor = Color(0xFF3B82F6),
+                            onClick = { showDialpad = !showDialpad }
+                        ) { KeypadGlyph(Color.White) }
+                        InCallActionButton(
+                            label = if (isRecording) "Rec On" else "Rec Off",
+                            active = isRecording,
+                            activeColor = Color(0xFFEF4444),
+                            onClick = onRecordToggle
+                        ) { RecordGlyph(isRecording) }
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                 }
 
                 when (callState) {
-                    is SipCallState.Incoming -> {
-                        IncomingCallControls(
-                            onAnswer = onAnswer,
-                            onDecline = onDecline
-                        )
-                    }
                     is SipCallState.Outgoing,
                     is SipCallState.Connected,
                     is SipCallState.OnHold -> {
@@ -371,4 +383,58 @@ private fun CallingRipples() {
             )
         }
     }
+}
+
+/** কল স্ক্রিনের গোল অ্যাকশন বাটন (আইকন + নিচে লেখা) */
+@Composable
+private fun InCallActionButton(
+    label: String,
+    active: Boolean,
+    activeColor: Color,
+    onClick: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(58.dp)
+                .clip(CircleShape)
+                .background(if (active) activeColor else Color.White.copy(alpha = 0.14f))
+                .border(1.dp, Color.White.copy(alpha = 0.22f), CircleShape)
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) { content() }
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(text = label, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = Color(0xFFCBD5E1))
+    }
+}
+
+/** নাম্বারপ্যাডের আইকন: ৩x৪ বিন্দুর গ্রিড (কিপ্যাডের মতো) */
+@Composable
+private fun KeypadGlyph(color: Color) {
+    Canvas(modifier = Modifier.size(width = 24.dp, height = 30.dp)) {
+        val r = size.width / 11f
+        for (row in 0..3) {
+            for (col in 0..2) {
+                drawCircle(
+                    color = color,
+                    radius = r,
+                    center = Offset(size.width * (col * 2 + 1) / 6f, size.height * (row * 2 + 1) / 8f)
+                )
+            }
+        }
+    }
+}
+
+/** রেকর্ড আইকন: চালু = ভরাট সাদা বিন্দু, বন্ধ = ফাঁপা রিং */
+@Composable
+private fun RecordGlyph(on: Boolean) {
+    Box(
+        modifier = Modifier
+            .size(22.dp)
+            .then(
+                if (on) Modifier.background(Color.White, CircleShape)
+                else Modifier.border(2.dp, Color.White.copy(alpha = 0.8f), CircleShape)
+            )
+    )
 }

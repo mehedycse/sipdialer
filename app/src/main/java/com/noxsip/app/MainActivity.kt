@@ -212,6 +212,7 @@ fun SipDialerApp(
     val callState by sipEngine.callState.collectAsStateWithLifecycle()
     val isMuted by sipEngine.isMuted.collectAsStateWithLifecycle()
     val isSpeaker by sipEngine.isSpeaker.collectAsStateWithLifecycle()
+    val isRecording by sipEngine.isRecording.collectAsStateWithLifecycle()
     val callQuality by sipEngine.callQuality.collectAsStateWithLifecycle()
     val callRecords by database.callHistoryDao().getRecentCallRecords()
         .collectAsStateWithLifecycle(initialValue = emptyList())
@@ -785,7 +786,9 @@ fun SipDialerApp(
                     onMuteToggle = { sipEngine.toggleMute() },
                     onSpeakerToggle = { sipEngine.toggleSpeaker() },
                     onHoldToggle = { sipEngine.toggleHold() },
-                    onDtmf = { sipEngine.sendDtmf(it) }
+                    onDtmf = { sipEngine.sendDtmf(it) },
+                    isRecording = isRecording,
+                    onRecordToggle = { sipEngine.toggleRecording() }
                 )
             }
         }
