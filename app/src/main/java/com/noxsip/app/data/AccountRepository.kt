@@ -52,6 +52,9 @@ class AccountRepository(private val context: Context) {
                         port = o.optInt("port", 5060),
                         transport = o.optString("transport", "UDP"),
                         proxy = o.optString("proxy"),
+                        stunServer = o.optString("stunServer"),
+                        turnUsername = o.optString("turnUsername"),
+                        turnPassword = SecureCrypto.decrypt(o.optString("turnPassword")),
                         displayName = o.optString("displayName"),
                         autoStart = o.optBoolean("autoStart", false),
                         enabled = o.optBoolean("enabled", true)
@@ -94,6 +97,9 @@ class AccountRepository(private val context: Context) {
                     .put("port", a.port)
                     .put("transport", a.transport)
                     .put("proxy", a.proxy)
+                    .put("stunServer", a.stunServer)
+                    .put("turnUsername", a.turnUsername)
+                    .put("turnPassword", SecureCrypto.encrypt(a.turnPassword))
                     .put("displayName", a.displayName)
                     .put("autoStart", a.autoStart)
                     .put("enabled", a.enabled)

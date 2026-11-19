@@ -1,5 +1,6 @@
 package com.noxsip.app.ui.screens
 
+import com.noxsip.app.ui.theme.themed
 import android.media.MediaPlayer
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -157,7 +158,7 @@ fun CallDetailsScreen(
     val shownName = name?.takeIf { it.isNotBlank() } ?: number
     val avatarColor = detailAvatarPalette[(shownName.hashCode() and 0x7fffffff) % detailAvatarPalette.size]
 
-    Column(modifier = modifier.fillMaxSize().background(Color(0xFFF4F5F8))) {
+    Column(modifier = modifier.fillMaxSize().background(themed(Color(0xFFF4F5F8), Color(0xFF000000)))) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -203,7 +204,7 @@ fun CallDetailsScreen(
 
             // নম্বর কার্ড
             item {
-                Surface(shape = RoundedCornerShape(16.dp), color = Color.White, modifier = Modifier.fillMaxWidth()) {
+                Surface(shape = RoundedCornerShape(16.dp), color = themed(Color.White, Color(0xFF0E0E0E)), modifier = Modifier.fillMaxWidth()) {
                     Column {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
@@ -234,7 +235,7 @@ fun CallDetailsScreen(
             }
 
             item {
-                Surface(shape = RoundedCornerShape(16.dp), color = Color.White, modifier = Modifier.fillMaxWidth()) {
+                Surface(shape = RoundedCornerShape(16.dp), color = themed(Color.White, Color(0xFF0E0E0E)), modifier = Modifier.fillMaxWidth()) {
                     Column {
                         if (records.isEmpty()) {
                             Text(
@@ -266,14 +267,14 @@ fun CallDetailsScreen(
                                             modifier = Modifier
                                                 .size(42.dp)
                                                 .clip(CircleShape)
-                                                .background(Color(0xFFEDEFF3))
+                                                .background(themed(Color(0xFFEDEFF3), Color(0xFF262626)))
                                                 .clickable { togglePlay(r) },
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Icon(
                                                 if (playingId == r.id) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                                                 contentDescription = "Play recording",
-                                                tint = Color(0xFF222222),
+                                                tint = themed(Color(0xFF222222), Color(0xFFE2E8F0)),
                                                 modifier = Modifier.size(24.dp)
                                             )
                                         }
@@ -328,13 +329,13 @@ private fun PlaybackBar(progress: Float, onSeek: (Float) -> Unit) {
         contentAlignment = Alignment.CenterStart
     ) {
         // হালকা ধূসর পাতলা ট্র্যাক, তার ওপর ফাঁপা সবুজ রিং থাম্ব (ফোনের প্লেয়ারের মতো)
-        Box(Modifier.fillMaxWidth().height(3.dp).clip(CircleShape).background(Color(0xFFE4E6EA)))
+        Box(Modifier.fillMaxWidth().height(3.dp).clip(CircleShape).background(themed(Color(0xFFE4E6EA), Color(0xFF333333))))
         Box(
             Modifier
                 .offset { IntOffset((p * (widthPx - thumbPx)).toInt(), 0) }
                 .size(22.dp)
                 .clip(CircleShape)
-                .background(Color.White)
+                .background(themed(Color.White, Color(0xFF0E0E0E)))
                 .border(3.dp, Green500, CircleShape)
         )
     }
@@ -343,10 +344,10 @@ private fun PlaybackBar(progress: Float, onSeek: (Float) -> Unit) {
 @Composable
 private fun RoundAction(icon: androidx.compose.ui.graphics.vector.ImageVector, desc: String, onClick: () -> Unit) {
     Box(
-        modifier = Modifier.size(42.dp).clip(CircleShape).background(Color(0xFFEDEFF3)).clickable(onClick = onClick),
+        modifier = Modifier.size(42.dp).clip(CircleShape).background(themed(Color(0xFFEDEFF3), Color(0xFF262626))).clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Icon(icon, contentDescription = desc, tint = Color(0xFF222222), modifier = Modifier.size(20.dp))
+        Icon(icon, contentDescription = desc, tint = themed(Color(0xFF222222), Color(0xFFE2E8F0)), modifier = Modifier.size(20.dp))
     }
 }
 

@@ -99,9 +99,9 @@ fun InCallScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF0A1428),
-                        Color(0xFF13274F),
-                        Color(0xFF0A1428)
+                        com.noxsip.app.ui.theme.themed(Color(0xFF0A1428), Color(0xFF000000)),
+                        com.noxsip.app.ui.theme.themed(Color(0xFF13274F), Color(0xFF0E0E0E)),
+                        com.noxsip.app.ui.theme.themed(Color(0xFF0A1428), Color(0xFF000000))
                     )
                 )
             )
@@ -120,7 +120,7 @@ fun InCallScreen(
                 modifier = Modifier.padding(top = 36.dp)
             ) {
                 Surface(
-                    color = Color(0xFF1E3A6E),
+                    color = com.noxsip.app.ui.theme.themed(Color(0xFF1E3A6E), Color(0xFF1F1F1F)),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
@@ -189,7 +189,7 @@ fun InCallScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "REC • Recording",
+                                text = "REC",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFFCA5A5)

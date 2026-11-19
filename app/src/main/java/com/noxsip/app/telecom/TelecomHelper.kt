@@ -319,7 +319,7 @@ object TelecomHelper {
         val engine = com.noxsip.app.sip.SipEngine.getInstance(context.applicationContext)
         if (engine.makeCall(number)) {
             if (NativeDialerOverlay.canShowOverlay(context.applicationContext)) {
-                NativeDialerOverlay.openAppCallScreen(context.applicationContext)
+                NativeDialerOverlay.openAppCallScreen(context.applicationContext, number = number)
             } else {
                 val intent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or

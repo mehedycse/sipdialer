@@ -125,6 +125,7 @@ class SipDialerApplication : Application() {
         super.onCreate()
         instance = this
         com.noxsip.app.ui.theme.UiTextScale.load(this)
+        com.noxsip.app.ui.theme.ThemeMode.load(this)
 
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityResumed(activity: Activity) {

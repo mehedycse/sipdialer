@@ -996,11 +996,36 @@ class SipEngine(private val context: Context) {
             accountParams.isOutboundProxyEnabled = true
             accountParams.setRoutesAddresses(arrayOf(serverAddr))
 
+            // "stun:host:3478" / "turn:host:3478?transport=udp" লিখলেও চলে; শুধু host:port নেওয়া হয়
+            val stunHost = account.stunServer.trim()
+                .removePrefix("stun:").removePrefix("turn:").substringBefore("?").trim()
+            val useNat = stunHost.isNotEmpty()
+            val turnUser = account.turnUsername.trim()
             val natPolicy = core.createNatPolicy().apply {
-                isStunEnabled = false
-                isIceEnabled = false
-                isTurnEnabled = false
+                if (useNat) {
+                    stunServer = stunHost
+                    isStunEnabled = true
+                    isIceEnabled = true
+                    isTurnEnabled = turnUser.isNotEmpty()
+                    if (turnUser.isNotEmpty()) stunServerUsername = turnUser
+                } else {
+                    isStunEnabled = false
+                    isIceEnabled = false
+                    isTurnEnabled = false
+                }
                 isUpnpEnabled = false
+            }
+            if (useNat && turnUser.isNotEmpty() && account.turnPassword.isNotEmpty()) {
+                val turnAuth = Factory.instance().createAuthInfo(
+                    turnUser,
+                    null,
+                    account.turnPassword,
+                    null,
+                    null,
+                    null
+                )
+                core.addAuthInfo(turnAuth)
+                authInfos[id]?.add(turnAuth)
             }
             accountParams.natPolicy = natPolicy
 

@@ -130,7 +130,7 @@ class SipCallRedirectionService : CallRedirectionService() {
                         onSipSelected = {
                             mainHandler.removeCallbacks(timeoutRunnable)
                             // আগে অ্যাপের কল স্ক্রিন সামনে আনি, যাতে বাতিল হওয়া SIM কলের সিস্টেম স্ক্রিন/ব্যানার ঝলকে না ওঠে
-                            NativeDialerOverlay.openAppCallScreen(applicationContext, returnToPrevious = false)
+                            NativeDialerOverlay.openAppCallScreen(applicationContext, returnToPrevious = false, number = number)
                             if (callHandled.compareAndSet(false, true)) {
                                 try {
                                     cancelCall()
@@ -170,7 +170,7 @@ class SipCallRedirectionService : CallRedirectionService() {
             TelecomHelper.MODE_ALWAYS_SIP -> {
                 cancelCall()
                 if (NativeDialerOverlay.canShowOverlay(applicationContext)) {
-                    NativeDialerOverlay.openAppCallScreen(applicationContext)
+                    NativeDialerOverlay.openAppCallScreen(applicationContext, number = number)
                 }
                 startSipCallEnsuringRegistration(sipEngine, number)
             }

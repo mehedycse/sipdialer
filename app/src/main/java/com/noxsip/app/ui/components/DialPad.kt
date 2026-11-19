@@ -1,5 +1,6 @@
 package com.noxsip.app.ui.components
 
+import com.noxsip.app.ui.theme.themed
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -79,7 +80,7 @@ private fun DialPadButton(
         modifier = Modifier
             .size(if (flat) 58.dp else 74.dp)
             .clip(CircleShape)
-            .background(if (flat) Color.Transparent else Color(0xFFF0F3FA))
+            .background(if (flat) Color.Transparent else themed(Color(0xFFF0F3FA), Color(0xFF1A1A1A)))
             .combinedClickable(
                 onClick = {
                     haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -102,7 +103,7 @@ private fun DialPadButton(
                 text = digit,
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Normal,
-                color = Color(0xFF1F2833)
+                color = themed(Color(0xFF1F2833), Color(0xFFF1F5F9))
             )
             if (letters.isNotEmpty()) {
                 Text(

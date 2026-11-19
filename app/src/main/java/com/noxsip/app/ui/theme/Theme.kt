@@ -38,32 +38,36 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Navy500,
+    primary = Color(0xFF5B8DEF),
     onPrimary = Color.White,
-    primaryContainer = Navy800,
-    onPrimaryContainer = Navy100,
+    primaryContainer = Color(0xFF1F1F1F),
+    onPrimaryContainer = Color(0xFFE4E7EE),
     secondary = Sky500,
     onSecondary = Color.White,
-    secondaryContainer = Navy800,
-    onSecondaryContainer = Navy100,
+    secondaryContainer = Color(0xFF1F1F1F),
+    onSecondaryContainer = Color(0xFFE4E7EE),
     tertiary = Violet500,
     onTertiary = Color.White,
-    background = Navy950,
-    onBackground = Color(0xFFF8FAFC),
-    surface = Navy900,
-    onSurface = Color(0xFFF8FAFC),
-    surfaceVariant = Navy800,
-    onSurfaceVariant = Slate400,
-    surfaceContainer = Navy900,
-    outline = Slate600,
-    outlineVariant = Slate700,
+    background = Color(0xFF000000),
+    onBackground = Color(0xFFF4F4F5),
+    surface = Color(0xFF0E0E0E),
+    onSurface = Color(0xFFF4F4F5),
+    surfaceVariant = Color(0xFF1F1F1F),
+    onSurfaceVariant = Color(0xFFA1A1AA),
+    surfaceContainer = Color(0xFF0E0E0E),
+    outline = Color(0xFF52525B),
+    outlineVariant = Color(0xFF333333),
     error = Red500,
     onError = Color.White,
 )
 
 @Composable
 fun SipDialerTheme(
-    darkTheme: Boolean = false, // সবসময় লাইট থিম
+    darkTheme: Boolean = when (ThemeMode.mode) {
+        ThemeMode.DARK -> true
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        else -> false
+    },
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
@@ -72,8 +76,10 @@ fun SipDialerTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = Color(0xFF1E3FA0).toArgb()
+            window.statusBarColor = (if (darkTheme) Color(0xFF000000) else Color(0xFF1E3FA0)).toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+            // নিচের নেভিগেশন বারের আইকন: লাইটে কালো, ডার্কে সাদা
+            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !darkTheme
         }
     }
 
@@ -81,7 +87,8 @@ fun SipDialerTheme(
     val baseDensity = LocalDensity.current
     val effectiveFontScale = (baseDensity.fontScale * UiTextScale.scale).coerceAtMost(1.6f)
     CompositionLocalProvider(
-        LocalDensity provides Density(baseDensity.density, effectiveFontScale)
+        LocalDensity provides Density(baseDensity.density, effectiveFontScale),
+        LocalDarkTheme provides darkTheme
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

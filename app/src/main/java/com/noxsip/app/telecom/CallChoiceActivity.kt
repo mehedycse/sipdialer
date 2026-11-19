@@ -1,5 +1,6 @@
 package com.noxsip.app.telecom
 
+import com.noxsip.app.ui.theme.themed
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -56,9 +57,9 @@ class CallChoiceActivity : ComponentActivity() {
                                 indication = null
                             ) {},
                         shape = RoundedCornerShape(22.dp),
-                        color = Color.White,
+                        color = themed(Color.White, Color(0xFF0E0E0E)),
                         shadowElevation = 8.dp,
-                        border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                        border = BorderStroke(1.dp, themed(Color(0xFFE2E8F0), Color(0xFF333333)))
                     ) {
                         Column(
                             modifier = Modifier
@@ -71,7 +72,7 @@ class CallChoiceActivity : ComponentActivity() {
                                 text = "Select Calling Account",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E293B)
+                                color = themed(Color(0xFF1E293B), Color(0xFFF8FAFC))
                             )
 
                             // Single row with 3 Pill-Shaped buttons: SIM 1 | SIM 2 | SIP
@@ -148,13 +149,13 @@ class CallChoiceActivity : ComponentActivity() {
                                     .fillMaxWidth()
                                     .heightIn(min = 42.dp)
                                     .clip(RoundedCornerShape(24.dp))
-                                    .background(Color(0xFFF1F5F9))
+                                    .background(themed(Color(0xFFF1F5F9), Color(0xFF1A1A1A)))
                                     .clickable { finish() },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "Cancel",
-                                    color = Color(0xFF475569),
+                                    color = themed(Color(0xFF475569), Color(0xFFD4D4D8)),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
                                     textAlign = TextAlign.Center

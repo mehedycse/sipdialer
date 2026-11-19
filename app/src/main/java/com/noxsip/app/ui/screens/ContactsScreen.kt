@@ -1,5 +1,6 @@
 package com.noxsip.app.ui.screens
 
+import com.noxsip.app.ui.theme.themed
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -171,8 +172,8 @@ fun ContactsScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 14.dp, vertical = 4.dp)
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color(0xFFF2F3F5))
-                .border(1.dp, Color(0xFFE3E5EA), RoundedCornerShape(20.dp))
+                .background(themed(Color(0xFFF2F3F5), Color(0xFF1A1A1A)))
+                .border(1.dp, themed(Color(0xFFE3E5EA), Color(0xFF333333)), RoundedCornerShape(20.dp))
                 .padding(3.dp)
         ) {
             listOf("Phone", "Client", "Office").forEachIndexed { i, label ->
@@ -181,7 +182,7 @@ fun ContactsScreen(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(17.dp))
-                        .background(if (selected) Color.White else Color.Transparent)
+                        .background(if (selected) themed(Color.White, Color(0xFF0E0E0E)) else Color.Transparent)
                         .clickable(
                             interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                             indication = null
@@ -194,7 +195,7 @@ fun ContactsScreen(
                         fontSize = 13.sp,
                         maxLines = 1,
                         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                        color = if (selected) Color(0xFF111111) else Color(0xFF444B55)
+                        color = if (selected) themed(Color(0xFF111111), Color(0xFFF8FAFC)) else themed(Color(0xFF444B55), Color(0xFFD4D4D8))
                     )
                 }
             }

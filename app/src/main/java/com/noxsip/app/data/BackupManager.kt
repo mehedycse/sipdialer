@@ -57,6 +57,8 @@ object BackupManager {
                             .put("username", a.username).put("password", a.password)
                             .put("domain", a.domain).put("port", a.port)
                             .put("transport", a.transport).put("proxy", a.proxy)
+                            .put("stunServer", a.stunServer).put("turnUsername", a.turnUsername)
+                            .put("turnPassword", a.turnPassword)
                             .put("displayName", a.displayName).put("autoStart", a.autoStart)
                     )
                 }
@@ -133,6 +135,8 @@ object BackupManager {
                             username = o.optString("username"), password = o.optString("password"),
                             domain = o.optString("domain"), port = o.optInt("port", 5060),
                             transport = o.optString("transport", "UDP"), proxy = o.optString("proxy"),
+                            stunServer = o.optString("stunServer"), turnUsername = o.optString("turnUsername"),
+                            turnPassword = o.optString("turnPassword"),
                             displayName = o.optString("displayName"), autoStart = o.optBoolean("autoStart", false)
                         )
                     )

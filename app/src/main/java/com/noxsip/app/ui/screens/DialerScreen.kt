@@ -1,5 +1,6 @@
 package com.noxsip.app.ui.screens
 
+import com.noxsip.app.ui.theme.themed
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -183,15 +184,15 @@ fun DialerScreen(
                             indication = null
                         ) {},
                     shape = RoundedCornerShape(22.dp),
-                    color = Color.White,
+                    color = themed(Color.White, Color(0xFF0E0E0E)),
                     shadowElevation = 8.dp,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+                    border = androidx.compose.foundation.BorderStroke(1.dp, themed(Color(0xFFE2E8F0), Color(0xFF333333)))
                 ) {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("Select Calling Account", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
+                        Text("Select Calling Account", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = themed(Color(0xFF1E293B), Color(0xFFF8FAFC)))
                         Spacer(Modifier.height(12.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             val simLabels = if (sims.size > 1) listOf("SIM 1", "SIM 2") else listOf("SIM 1")
@@ -223,9 +224,9 @@ fun DialerScreen(
                         Spacer(Modifier.height(10.dp))
                         Box(
                             modifier = Modifier.fillMaxWidth().height(42.dp).clip(RoundedCornerShape(24.dp))
-                                .background(Color(0xFFF1F5F9)).clickable { showCallChooser = false },
+                                .background(themed(Color(0xFFF1F5F9), Color(0xFF1A1A1A))).clickable { showCallChooser = false },
                             contentAlignment = Alignment.Center
-                        ) { Text("Cancel", color = Color(0xFF475569), fontSize = 14.sp, fontWeight = FontWeight.Bold) }
+                        ) { Text("Cancel", color = themed(Color(0xFF475569), Color(0xFFD4D4D8)), fontSize = 14.sp, fontWeight = FontWeight.Bold) }
                     }
                 }
             }
@@ -349,7 +350,7 @@ fun DialerScreen(
                         .fillMaxWidth()
                         .heightIn(min = 44.dp)
                         .clip(RoundedCornerShape(22.dp))
-                        .background(Color(0xFFF0F3FA))
+                        .background(themed(Color(0xFFF0F3FA), Color(0xFF1A1A1A)))
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -548,8 +549,8 @@ fun DialerScreen(
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
                             .clip(RoundedCornerShape(20.dp))
-                            .background(Color(0xFFF2F3F5))
-                            .border(1.dp, Color(0xFFE3E5EA), RoundedCornerShape(20.dp))
+                            .background(themed(Color(0xFFF2F3F5), Color(0xFF1A1A1A)))
+                            .border(1.dp, themed(Color(0xFFE3E5EA), Color(0xFF333333)), RoundedCornerShape(20.dp))
                             .padding(3.dp)
                     ) {
                         listOf("All", "Outgoing", "Received", "Missed").forEachIndexed { tabIndex, label ->
@@ -558,7 +559,7 @@ fun DialerScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(17.dp))
-                                    .background(if (selected) Color.White else Color.Transparent)
+                                    .background(if (selected) themed(Color.White, Color(0xFF0E0E0E)) else Color.Transparent)
                                     .clickable(
                                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                                         indication = null
@@ -571,7 +572,7 @@ fun DialerScreen(
                                     fontSize = 13.sp,
                                     maxLines = 1,
                                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                                    color = if (selected) Color(0xFF111111) else Color(0xFF444B55)
+                                    color = if (selected) themed(Color(0xFF111111), Color(0xFFF8FAFC)) else themed(Color(0xFF444B55), Color(0xFFD4D4D8))
                                 )
                             }
                         }
@@ -587,10 +588,10 @@ fun DialerScreen(
                                 text = label,
                                 fontSize = 12.sp,
                                 fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Medium,
-                                color = if (sel) Color.White else Color(0xFF444B55),
+                                color = if (sel) Color.White else themed(Color(0xFF444B55), Color(0xFFD4D4D8)),
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(if (sel) Color(0xFF2563EB) else Color(0xFFF2F3F5))
+                                    .background(if (sel) Color(0xFF2563EB) else themed(Color(0xFFF2F3F5), Color(0xFF1A1A1A)))
                                     .clickable { sourceTab = i }
                                     .padding(horizontal = 12.dp, vertical = 5.dp)
                             )
@@ -696,13 +697,13 @@ fun DialerScreen(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-            color = Color.White,
+            color = themed(Color.White, Color(0xFF0E0E0E)),
             shadowElevation = 12.dp
         ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
         // নম্বর না থাকলে প্যানেলে শুধু কীপ্যাড; টাইপ/লোড/পেস্ট করলে উপরে নম্বরের সারি যোগ হয়ে প্যানেল উপরের দিকে বড় হয়, মুছলে আবার ছোট
         androidx.compose.animation.AnimatedVisibility(visible = phoneNumber.isNotEmpty()) {
-            Box(modifier = Modifier.fillMaxWidth().background(Color.White), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxWidth().background(themed(Color.White, Color(0xFF0E0E0E))), contentAlignment = Alignment.Center) {
                 Text(
                     text = formatDialNumber(phoneNumber),
                     fontSize = if (phoneNumber.length > 14) 22.sp else 28.sp,
@@ -742,7 +743,7 @@ fun DialerScreen(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color.White,
+                            color = themed(Color.White, Color(0xFF0E0E0E)),
                             shadowElevation = 8.dp
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -816,7 +817,7 @@ fun DialerScreen(
                 Icon(
                     imageVector = Icons.Filled.Dialpad,
                     contentDescription = "Hide keypad",
-                    tint = Color(0xFF222222),
+                    tint = themed(Color(0xFF222222), Color(0xFFE2E8F0)),
                     modifier = Modifier.size(26.dp)
                 )
             }
@@ -844,6 +845,8 @@ fun DialerScreen(
                                         },
                                         onSipSelected = {
                                             if (isRegistered) {
+                                                // নম্বর মোছার আগেই "Calling…" পর্দা, যেন হিস্ট্রি তালিকা ঝলকে না ওঠে
+                                                com.noxsip.app.telecom.NativeDialerOverlay.pendingSipCall.value = dialed
                                                 onCall(dialed)
                                                 phoneNumber = ""
                                             } else {
@@ -888,7 +891,7 @@ fun DialerScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Backspace,
                         contentDescription = "Backspace",
-                        tint = if (phoneNumber.isEmpty()) Color(0xFFB4B9C2) else Color(0xFF444B55),
+                        tint = if (phoneNumber.isEmpty()) Color(0xFFB4B9C2) else themed(Color(0xFF444B55), Color(0xFFD4D4D8)),
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -908,8 +911,8 @@ fun DialerScreen(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 20.dp, bottom = if (phoneNumber.isNotEmpty()) 90.dp else 24.dp),
-            containerColor = Color.White,
-            contentColor = Color(0xFF222222),
+            containerColor = themed(Color.White, Color(0xFF0E0E0E)),
+            contentColor = themed(Color(0xFF222222), Color(0xFFE2E8F0)),
             shape = CircleShape
         ) {
             Icon(Icons.Filled.Dialpad, contentDescription = "Show keypad")
@@ -1037,14 +1040,14 @@ private fun CallGroupRow(
             modifier = Modifier
                 .size(34.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFEDEFF3))
+                .background(themed(Color(0xFFEDEFF3), Color(0xFF262626)))
                 .clickable(onClick = onDetails),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Details",
-                tint = Color(0xFF333333),
+                tint = themed(Color(0xFF333333), Color(0xFFE2E8F0)),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -1102,10 +1105,10 @@ internal fun RowScope.SwipeAction(
             .padding(start = 12.dp)
             .size(48.dp)
             .clip(CircleShape)
-            .background(Color(0xFFE9EBF0))
+            .background(themed(Color(0xFFE9EBF0), Color(0xFF262626)))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Icon(icon, contentDescription = label, tint = Color(0xFF222222), modifier = Modifier.size(22.dp))
+        Icon(icon, contentDescription = label, tint = themed(Color(0xFF222222), Color(0xFFE2E8F0)), modifier = Modifier.size(22.dp))
     }
 }

@@ -174,18 +174,40 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             SipDialerTheme {
-                SipDialerApp(
-                    sipEngine = sipEngine,
-                    accountRepository = accountRepository,
-                    database = database,
-                    onStartService = {
-                        TelecomHelper.registerPhoneAccount(this)
-                        SipForegroundService.start(this)
-                    },
-                    onStopService = {
-                        SipForegroundService.stop(this)
+                // ফোনের ডায়ালার থেকে SIP বাছার পর কল স্ক্রিন না আসা পর্যন্ত "Calling…" পর্দা (হোম স্ক্রিন ঝলকানি ঠেকাতে)
+                val pendingNumber = com.noxsip.app.telecom.NativeDialerOverlay.pendingSipCall.value
+                val onCallRoute by com.noxsip.app.telecom.CallBarOverlay.onCallRoute.collectAsStateWithLifecycle()
+                LaunchedEffect(pendingNumber) {
+                    if (pendingNumber != null) {
+                        kotlinx.coroutines.delay(4000)
+                        com.noxsip.app.telecom.NativeDialerOverlay.pendingSipCall.value = null
                     }
-                )
+                }
+                LaunchedEffect(onCallRoute) {
+                    if (onCallRoute) {
+                        // কল স্ক্রিন প্রথম ফ্রেম আঁকা পর্যন্ত একটু অপেক্ষা
+                        kotlinx.coroutines.delay(250)
+                        com.noxsip.app.telecom.NativeDialerOverlay.pendingSipCall.value = null
+                    }
+                }
+                Box(modifier = Modifier.fillMaxSize()) {
+                    SipDialerApp(
+                        sipEngine = sipEngine,
+                        accountRepository = accountRepository,
+                        database = database,
+                        onStartService = {
+                            TelecomHelper.registerPhoneAccount(this@MainActivity)
+                            SipForegroundService.start(this@MainActivity)
+                        },
+                        onStopService = {
+                            SipForegroundService.stop(this@MainActivity)
+                        }
+                    )
+                    val pn = pendingNumber
+                    if (pn != null) {
+                        com.noxsip.app.ui.screens.PendingCallScreen(pn)
+                    }
+                }
             }
         }
     }
@@ -392,7 +414,11 @@ fun SipDialerApp(
                         .fillMaxWidth()
                         .background(
                             Brush.horizontalGradient(
-                                colors = listOf(
+                                colors = if (com.noxsip.app.ui.theme.LocalDarkTheme.current) listOf(
+                                    Color(0xFF000000),
+                                    Color(0xFF0E0E0E),
+                                    Color(0xFF0A0A0A)
+                                ) else listOf(
                                     Color(0xFF1E3FA0),
                                     Color(0xFF2563EB),
                                     Color(0xFF3B8BEB)
@@ -771,7 +797,13 @@ fun SipDialerApp(
                 )
             }
 
-            composable(Screen.InCall.route) {
+            composable(
+                Screen.InCall.route,
+                enterTransition = { androidx.compose.animation.EnterTransition.None },
+                exitTransition = { androidx.compose.animation.ExitTransition.None },
+                popEnterTransition = { androidx.compose.animation.EnterTransition.None },
+                popExitTransition = { androidx.compose.animation.ExitTransition.None }
+            ) {
                 InCallScreen(
                     callState = callState,
                     isMuted = isMuted,
@@ -813,9 +845,9 @@ fun SipDialerApp(
                     .clip(RoundedCornerShape(20.dp))
                     .clickable { com.noxsip.app.telecom.IncomingUiRequest.request() },
                 shape = RoundedCornerShape(20.dp),
-                color = Color(0xFF14253E),
+                color = com.noxsip.app.ui.theme.themed(Color(0xFF14253E), Color(0xFF0E0E0E)),
                 shadowElevation = 10.dp,
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF3B6998))
+                border = androidx.compose.foundation.BorderStroke(1.dp, com.noxsip.app.ui.theme.themed(Color(0xFF3B6998), Color(0xFF333333)))
             ) {
                 Column(
                     modifier = Modifier

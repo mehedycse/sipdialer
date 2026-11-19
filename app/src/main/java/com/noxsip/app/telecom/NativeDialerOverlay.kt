@@ -185,7 +185,7 @@ object NativeDialerOverlay {
                 dismiss()
                 if (number.isNotBlank()) {
                     onSipSelected()
-                    openAppCallScreen(appContext)
+                    openAppCallScreen(appContext, number = number)
                 }
             }
             pillsRow.addView(
@@ -424,13 +424,18 @@ object NativeDialerOverlay {
     @Volatile
     var returnToPreviousAfterCall = false
 
+    /** ফোনের ডায়ালার থেকে SIP বেছে নেওয়ার পর কল স্ক্রিন না আসা পর্যন্ত দেখানোর নম্বর (নেই = কিছু দেখাবে না) */
+    val pendingSipCall = androidx.compose.runtime.mutableStateOf<String?>(null)
+
     /**
      * নেটিভ ডায়ালার থেকে SIP কলের জন্য আলাদা ওভারলে না দেখিয়ে অ্যাপের নিজস্ব কল স্ক্রিন (InCallScreen) খোলে।
      * কল স্টেট Outgoing হলেই MainActivity নিজে InCall স্ক্রিনে চলে যায়।
      */
-    fun openAppCallScreen(context: Context, returnToPrevious: Boolean = true) {
+    fun openAppCallScreen(context: Context, returnToPrevious: Boolean = true, number: String? = null) {
         try {
             if (returnToPrevious) returnToPreviousAfterCall = true
+            // কল স্ক্রিন আসা পর্যন্ত অ্যাপের হোম স্ক্রিন ঢেকে রাখার জন্য
+            if (!number.isNullOrBlank()) pendingSipCall.value = number
             val intent = android.content.Intent(context.applicationContext, com.noxsip.app.MainActivity::class.java).apply {
                 flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
                     android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or

@@ -167,6 +167,9 @@ fun AccountSetupScreen(
     var port by remember(formTarget) { mutableStateOf(formTarget?.port?.toString() ?: "5060") }
     var transport by remember(formTarget) { mutableStateOf(formTarget?.transport ?: "UDP") }
     var proxy by remember(formTarget) { mutableStateOf(formTarget?.proxy ?: "") }
+    var stunServer by remember(formTarget) { mutableStateOf(formTarget?.stunServer ?: "") }
+    var turnUsername by remember(formTarget) { mutableStateOf(formTarget?.turnUsername ?: "") }
+    var turnPassword by remember(formTarget) { mutableStateOf(formTarget?.turnPassword ?: "") }
     var displayName by remember(formTarget) { mutableStateOf(formTarget?.displayName ?: "") }
     var autoStart by remember(formTarget) { mutableStateOf(formTarget?.autoStart ?: false) }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -243,6 +246,15 @@ fun AccountSetupScreen(
             SettingsRow(Icons.Filled.Block, "Blocked numbers", "Calls from these numbers are rejected", Color(0xFFDC2626)) { settingsTab = 5 }
             SettingsRow(Icons.Filled.ManageAccounts, "User Account", backupSubtitle, Color(0xFFDB2777)) { settingsTab = 3 }
             SettingsRow(Icons.Filled.SystemUpdate, "App Update", "Check for a new version", Color(0xFF0EA5E9)) { settingsTab = 6 }
+            SettingsRow(
+                Icons.Filled.DarkMode, "Appearance",
+                when (com.noxsip.app.ui.theme.ThemeMode.mode) {
+                    com.noxsip.app.ui.theme.ThemeMode.DARK -> "Dark theme"
+                    com.noxsip.app.ui.theme.ThemeMode.SYSTEM -> "Follows phone setting"
+                    else -> "Light theme"
+                },
+                Color(0xFF475569)
+            ) { settingsTab = 7 }
             // নিচের ঐচ্ছিক ফ্লোটিং উইজেট (SupportSlot) যেন শেষ সারির উপর না পড়ে
             Spacer(modifier = Modifier.height(72.dp))
         } else {
@@ -253,6 +265,7 @@ fun AccountSetupScreen(
                 4 -> "Power Mode"
                 5 -> "Blocked numbers"
                 6 -> "App Update"
+                7 -> "Appearance"
                 else -> "User Account"
             }
             Row(
@@ -272,6 +285,7 @@ fun AccountSetupScreen(
                     4 -> Icons.Filled.BatteryChargingFull to Color(0xFFEA8A00)
                     5 -> Icons.Filled.Block to Color(0xFFDC2626)
                     6 -> Icons.Filled.SystemUpdate to Color(0xFF0EA5E9)
+                    7 -> Icons.Filled.DarkMode to Color(0xFF475569)
                     else -> Icons.Filled.ManageAccounts to Color(0xFFDB2777)
                 }
                 androidx.compose.foundation.layout.Box(
@@ -921,6 +935,35 @@ fun AccountSetupScreen(
         if (settingsTab == 3) {
             BackupRestoreCard()
         }
+        if (settingsTab == 7) {
+            val themeMode = com.noxsip.app.ui.theme.ThemeMode.mode
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                    listOf(
+                        com.noxsip.app.ui.theme.ThemeMode.LIGHT to "Light",
+                        com.noxsip.app.ui.theme.ThemeMode.DARK to "Dark",
+                        com.noxsip.app.ui.theme.ThemeMode.SYSTEM to "System default"
+                    ).forEach { (value, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { com.noxsip.app.ui.theme.ThemeMode.set(context, value) }
+                                .padding(horizontal = 12.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = themeMode == value, onClick = { com.noxsip.app.ui.theme.ThemeMode.set(context, value) })
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(label, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+            }
+        }
         if (settingsTab == 6) {
             if (com.noxsip.app.BuildConfig.VERSION_URL.isNotBlank()) UpdateCard()
             else Text(
@@ -1160,7 +1203,7 @@ fun AccountSetupScreen(
                         modifier = Modifier.heightIn(min = 30.dp)
                     ) {
                         Text(
-                            text = if (showAdvanced) "Hide Advanced ▲" else "Proxy / Name ▼",
+                            text = if (showAdvanced) "Hide Advanced ▲" else "Proxy / NAT ▼",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Indigo600
@@ -1191,6 +1234,42 @@ fun AccountSetupScreen(
                             enabled = !formLocked,
                             modifier = Modifier.weight(1f)
                         )
+                    }
+                }
+
+                // NAT (STUN/TURN): ফাঁকা রাখলে বন্ধ। কল যায় কিন্তু কথা/ইনকামিং আসে না হলে সার্ভারের দেওয়া মান বসান
+                AnimatedVisibility(visible = showAdvanced) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SlimInputField(
+                            value = stunServer,
+                            onValueChange = { stunServer = it },
+                            label = "STUN / TURN Server",
+                            placeholder = "host:3478 (optional)",
+                            enabled = !formLocked,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            SlimInputField(
+                                value = turnUsername,
+                                onValueChange = { turnUsername = it },
+                                label = "TURN Username",
+                                placeholder = "Optional",
+                                enabled = !formLocked,
+                                modifier = Modifier.weight(1f)
+                            )
+                            SlimInputField(
+                                value = turnPassword,
+                                onValueChange = { turnPassword = it },
+                                label = "TURN Password",
+                                placeholder = "Optional",
+                                enabled = !formLocked,
+                                visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
 
@@ -1249,6 +1328,9 @@ fun AccountSetupScreen(
                                 port = port.toIntOrNull() ?: 5060,
                                 transport = transport,
                                 proxy = proxy.trim(),
+                                stunServer = stunServer.trim(),
+                                turnUsername = turnUsername.trim(),
+                                turnPassword = turnPassword,
                                 displayName = displayName.trim(),
                                 autoStart = autoStart
                             )
