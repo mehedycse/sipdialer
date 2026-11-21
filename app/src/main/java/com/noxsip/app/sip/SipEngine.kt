@@ -1274,7 +1274,9 @@ class SipEngine(private val context: Context) {
         return devices.firstOrNull {
             it.type == AudioDevice.Type.Bluetooth && it.hasCapability(AudioDevice.Capabilities.CapabilityPlay)
         } ?: devices.firstOrNull {
-            it.type == AudioDevice.Type.Headset || it.type == AudioDevice.Type.Headphones
+            // তারের হেডসেট: ৩.৫ মিমি (Headset/Headphones), USB-C (GenericUsb), AUX
+            it.type == AudioDevice.Type.Headset || it.type == AudioDevice.Type.Headphones ||
+                it.type == AudioDevice.Type.GenericUsb || it.type == AudioDevice.Type.AuxLine
         } ?: devices.firstOrNull { it.type == AudioDevice.Type.Earpiece }
     }
 
